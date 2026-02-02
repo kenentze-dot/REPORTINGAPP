@@ -1,4 +1,22 @@
-name: Build APK
+name: Build Full APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Tools
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential git python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+          pip install --user --upgrade Cython==0.29.33 buildozer
+
+      - name: Build APK
+        run: |
+          export PATH=$PATH:$HOME/.local/bin
+          # This command builds your specific main.py with all its features
+          buildozer -v android debugname: Build APK
 on: [push]
 jobs:
   build:
