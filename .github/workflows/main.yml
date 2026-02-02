@@ -6,8 +6,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Android Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-en libffi-dev wget tar
+          pip install --user --upgrade Cython==0.29.33 buildozer
+
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+        run: |
+          export PATH=$PATH:$HOME/.local/bin
+          # This command uses your buildozer.spec for the Camera/API 33 settings
+          buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          command: buildozer -v android debug
-          repository_root: .
+          name: package
+          path: bin/*.apk
