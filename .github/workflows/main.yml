@@ -6,16 +6,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Android Dependencies
+      - name: Install System Tools
         run: |
           sudo apt update
-          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-en libffi-dev wget tar
+          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
           pip install --user --upgrade Cython==0.29.33 buildozer
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # This command uses your buildozer.spec for the Camera/API 33 settings
+          # This command starts the actual 20-minute heavy lifting
           buildozer -v android debug
 
       - name: Upload APK
