@@ -6,20 +6,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install System Tools
+      - name: Install System and Android Tools
         run: |
           sudo apt update
-          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
+          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget openjdk-17-jdk
           pip install --user --upgrade Cython==0.29.33 buildozer
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # This command starts the actual 20-minute heavy lifting
-          buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: package
-          path: bin/*.apk
+          # This 'yes |' part automatically accepts the Android licenses that often block aidl
+          yes | buildozer -v android debug
