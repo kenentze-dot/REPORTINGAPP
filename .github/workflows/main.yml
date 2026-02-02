@@ -6,14 +6,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install System and Android Tools
+      - name: Install System Dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget openjdk-17-jdk
+          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget openjdk-17-jdk libtool autoconf automake
           pip install --user --upgrade Cython==0.29.33 buildozer
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # This 'yes |' part automatically accepts the Android licenses that often block aidl
-          yes | buildozer -v android debug
+          # No 'yes |' this time to avoid the pipe error
+          buildozer -v android debug
