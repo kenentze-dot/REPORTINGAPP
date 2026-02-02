@@ -3,6 +3,7 @@ title = Enercapita Scanner
 package.name = enercapitaddr
 package.domain = org.rigtool
 source.dir = .
+version = 0.1
 source.include_exts = py,png,jpg,kv,xlsm
 requirements = python3, kivy==2.2.1, openpyxl, pandas, jnius, pillow
 
@@ -18,3 +19,4 @@ fullscreen = 1
 [buildozer]
 log_level = 2
 warn_on_root = 1
+
