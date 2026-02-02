@@ -16,24 +16,4 @@ jobs:
         run: |
           export PATH=$PATH:$HOME/.local/bin
           # This command builds your specific main.py with all its features
-          buildozer -v android debugname: Build APK
-on: [push]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          buildozer_version: master
-          python_version: 3.11
-          command: buildozer -v android debug
-          repository_root: .
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: package
-          path: bin/*.apk
+          buildozer -v android debug
