@@ -6,22 +6,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 33
+          build-tools: 33.0.1
+
       - name: Install System Dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget openjdk-17-jdk libtool autoconf automake
+          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget libtool autoconf automake
           pip install --user --upgrade Cython==0.29.33 buildozer
-
-      - name: Pre-accept Android Licenses
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          # This tells the Android SDK Manager to assume all licenses are accepted
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
-          echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb743402295594811d1e\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n50466d5a477ea89735a22357325656922318a814" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
+          # We tell buildozer the SDK is already here so it doesn't try to download its own broken version
           buildozer -v android debug
