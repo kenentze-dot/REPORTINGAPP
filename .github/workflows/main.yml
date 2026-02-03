@@ -28,27 +28,20 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # 1. Force environment variables to use the System SDK
-          export ANDROID_HOME=$ANDROID_SDK_ROOT
-          export PATH=$PATH:$HOME/.local/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+          # FORCE BUILDOZER TO USE THE EXISTING SYSTEM SDK
+          # This prevents it from creating that hidden .buildozer folder that fails.
+          export ANDROID_SDK_HOME=$ANDROID_SDK_ROOT
+          export ANDROID_NDK_HOME=$ANDROID_NDK_ROOT
           
-          # 2. PRE-EMPTIVE STRIKE: Buildozer's hidden directory
-          # We create the EXACT path seen in your failed logs
-          mkdir -p /home/runner/.buildozer/android/platform
+          # MANUALLY CREATE THE LICENSE RECEIPT IN THE SYSTEM FOLDER
+          # This is the "Signed Contract" that the server tools look for.
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo -e "247a1c6d51807b19145a391a9511917ff7c985c2\nd583995f1f0e74114399b91c201826b093140163" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           
-          # 3. THE HIJACK: Link the System SDK to Buildozer's private path
-          # Now, when Buildozer looks for its SDK, it finds our pre-approved one.
-          ln -sf $ANDROID_HOME /home/runner/.buildozer/android/platform/android-sdk
-
-          # 4. PRE-ACCEPT LICENSES ON THE HIJACKED PATH
-          yes | sdkmanager --licenses --sdk_root=/home/runner/.buildozer/android/platform/android-sdk || true
-          
-          # 5. EXECUTE: Pipe 'yes' into every single step of buildozer
-          # Using a subshell loop to ensure 'yes' never stops feeding 'y'
-          (while true; do echo y; sleep 1; done) | buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: EnercapitaScanner-APK
-          path: bin/*.apk
+          # EXECUTE WITH PATH OVERRIDES
+          # These flags tell Buildozer: "Do not download. Use these paths."
+          buildozer android debug \
+            --requirements="python3,kivy==2.2.1,openpyxl,pandas,jnius,pillow" \
+            --android.sdk_path=$ANDROID_SDK_ROOT \
+            --android.accept_sdk_license=True \
+            --android.api=33
