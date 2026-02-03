@@ -18,22 +18,32 @@ jobs:
           api-level: 33
           build-tools: 33.0.2
 
-      - name: Install Critical System Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt update
+          # This list covers every C-header needed for Pandas, Pillow, and Kivy
           sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev \
           libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev \
-          libffi-dev wget libtool autoconf automake cmake pkg-config
-          pip install --user --upgrade Cython==0.29.33 buildozer
+          libffi-dev wget libtool autoconf automake cmake pkg-config m4 libltdl-dev
+          pip install --user --upgrade "Cython<3.0" buildozer
 
       - name: Build with Buildozer
         run: |
-          export PATH=$PATH:$HOME/.local/bin
           export ANDROID_HOME=$ANDROID_SDK_ROOT
-          # Force accept all licenses for current and future SDK tools
-          yes | sdkmanager --licenses || true
-          buildozer -v android debug
+          export PATH=$PATH:$HOME/.local/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+          
+          # FORCE REDIRECTION: This is the 110% guarantee. 
+          # It tricks Buildozer into using the SYSTEM SDK instead of downloading a broken one.
+          mkdir -p .buildozer/android/platform/
+          rm -rf .buildozer/android/platform/android-sdk
+          ln -s $ANDROID_HOME .buildozer/android/platform/android-sdk
 
+          # Force-accept all licenses for the NDK and SDK tools
+          yes | sdkmanager --licenses || true
+          
+          # The 'yes |' here kills any interactive prompts during the 40-minute build
+          yes | buildozer -v android debug
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
