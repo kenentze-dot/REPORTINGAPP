@@ -15,17 +15,22 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install System Dependencies
+      - name: Install Missing System Tools
         run: |
           sudo apt update
-          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget libtool autoconf automake
+          # Including libtool, autoconf, and cmake to prevent compilation errors for Pandas/Pillow
+          sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget libtool autoconf automake cmake
           pip install --user --upgrade Cython==0.29.33 buildozer
+
+      - name: Pre-Accept All Licenses
+        run: |
+          # This forces the acceptance of the 36.1 tools that blocked you last time
+          yes | sdkmanager --licenses || true
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # This line tells Buildozer to use the SDK we just set up
+          # Force Buildozer to use the pre-installed SDK path
           export ANDROID_HOME=$ANDROID_SDK_ROOT
-          # Accept all licenses via the official sdkmanager before starting
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # We use 'debug' because 'release' requires signing keys you haven't set up yet
           buildozer -v android debug
