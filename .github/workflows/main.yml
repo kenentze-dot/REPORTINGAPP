@@ -30,6 +30,12 @@ jobs:
         run: |
           export PATH=$PATH:$HOME/.local/bin
           export ANDROID_HOME=$ANDROID_SDK_ROOT
-          # Final safety check: accept all licenses via the pre-installed SDK
+          # Force accept all licenses for current and future SDK tools
           yes | sdkmanager --licenses || true
           buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: EnercapitaScanner-APK
+          path: bin/*.apk
