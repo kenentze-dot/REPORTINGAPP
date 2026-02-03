@@ -21,7 +21,6 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt update
-          # This list covers every C-header needed for Pandas, Pillow, and Kivy
           sudo apt install -y build-essential git python3-dev zip unzip zlib1g-dev \
           libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev \
           libffi-dev wget libtool autoconf automake cmake pkg-config m4 libltdl-dev
@@ -29,21 +28,25 @@ jobs:
 
       - name: Build with Buildozer
         run: |
+          # 1. Force environment variables to use the System SDK
           export ANDROID_HOME=$ANDROID_SDK_ROOT
           export PATH=$PATH:$HOME/.local/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
-          # FORCE REDIRECTION: This is the 110% guarantee. 
-          # It tricks Buildozer into using the SYSTEM SDK instead of downloading a broken one.
-          mkdir -p .buildozer/android/platform/
-          rm -rf .buildozer/android/platform/android-sdk
-          ln -s $ANDROID_HOME .buildozer/android/platform/android-sdk
+          # 2. PRE-EMPTIVE STRIKE: Buildozer's hidden directory
+          # We create the EXACT path seen in your failed logs
+          mkdir -p /home/runner/.buildozer/android/platform
+          
+          # 3. THE HIJACK: Link the System SDK to Buildozer's private path
+          # Now, when Buildozer looks for its SDK, it finds our pre-approved one.
+          ln -sf $ANDROID_HOME /home/runner/.buildozer/android/platform/android-sdk
 
-          # Force-accept all licenses for the NDK and SDK tools
-          yes | sdkmanager --licenses || true
+          # 4. PRE-ACCEPT LICENSES ON THE HIJACKED PATH
+          yes | sdkmanager --licenses --sdk_root=/home/runner/.buildozer/android/platform/android-sdk || true
           
-          # The 'yes |' here kills any interactive prompts during the 40-minute build
-          yes | buildozer -v android debug
-          
+          # 5. EXECUTE: Pipe 'yes' into every single step of buildozer
+          # Using a subshell loop to ensure 'yes' never stops feeding 'y'
+          (while true; do echo y; sleep 1; done) | buildozer -v android debug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
